@@ -8,13 +8,6 @@ from .querysets import PostQuerySet
 User = get_user_model()
 
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self.user)
-
-
 class Category(PublishedModel, CreatedModel):
     title = models.CharField(
         'Заголовок',
@@ -76,7 +69,7 @@ class Post(PublishedModel, CreatedModel):
     objects = PostQuerySet.as_manager()
     image = models.ImageField(
         'Фото',
-        upload_to='birthdays_images',
+        upload_to='blog_images',
         blank=True
     )
 
