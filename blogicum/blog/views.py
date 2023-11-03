@@ -32,7 +32,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostUpdateView(
     CheckAccessMixin, ReverseToPageMixin, UpdateView,
 ):
-    queryset = Post.objects.all()
+    model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
 
@@ -41,13 +41,15 @@ class PostUpdateView(
 
 
 class PostDeleteView(CheckAccessMixin, DeleteView):
-    queryset = Post.objects.all()
+    model = Post
     template_name = 'blog/create.html'
     success_url = reverse_lazy('blog:index')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = PostForm(instance=self.object)
+        print('печать объекта', self.object)
+        print('печать form', context['form'])
         return context
 
 
@@ -123,7 +125,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 class CommentUpdateView(
         CheckAccessMixin, ReverseToPageMixin, UpdateView
 ):
-    queryset = Comment.objects.all()
+    model = Comment
     form_class = CommentForm
     pk_url_kwarg = 'comment_pk'
     template_name = 'blog/create.html'

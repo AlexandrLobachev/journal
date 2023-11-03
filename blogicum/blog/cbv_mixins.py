@@ -8,7 +8,7 @@ class CheckAccessMixin(UserPassesTestMixin, SingleObjectMixin,
                        LoginRequiredMixin):
 
     def test_func(self):
-        instance = self.get_object(queryset=self.queryset)
+        instance = self.get_object()
         return self.request.user == instance.author
 
     def handle_no_permission(self):
