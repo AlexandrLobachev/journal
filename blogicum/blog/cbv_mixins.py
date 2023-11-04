@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.detail import SingleObjectMixin
 from django.http import HttpResponseForbidden
-from django.urls import reverse_lazy
+from django.urls import reverse
 
 
 class CheckAccessMixin(UserPassesTestMixin, SingleObjectMixin,
@@ -20,8 +20,9 @@ class ReverseToPageMixin(object):
     slug_url_kwarg = 'pk'
 
     def get_success_url(self):
-        return reverse_lazy(self.success_url,
-                            kwargs={self.slug_url_kwarg: self.kwargs['pk']})
+        return reverse(self.success_url,
+                       kwargs={self.slug_url_kwarg:
+                               self.kwargs[self.slug_url_kwarg]})
 
 
 class OneAndManyOjectsMixin(SingleObjectMixin):

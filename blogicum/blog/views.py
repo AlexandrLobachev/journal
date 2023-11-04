@@ -1,4 +1,7 @@
-from django.urls import reverse_lazy
+import datetime
+
+from django.db.models import Q
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
@@ -26,7 +29,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('blog:profile', kwargs={'slug': self.request.user})
+        return reverse('blog:profile', kwargs={'slug': self.request.user})
 
 
 class PostUpdateView(
@@ -37,7 +40,7 @@ class PostUpdateView(
     template_name = 'blog/create.html'
 
     def handle_no_permission(self):
-        return redirect(self.success_url, pk=self.kwargs['pk'])
+        return redirect(self.success_url, pk=self.kwargs[self.slug_url_kwarg])
 
 
 class PostDeleteView(CheckAccessMixin, DeleteView):
@@ -56,11 +59,11 @@ class PostDetailView(DetailView):
     template_name = 'blog/detail.html'
 
     def get_object(self, queryset=None):
-        self.object = super().get_object()
-        if self.object.author != self.request.user:
-            self.object = super().get_object(Post.objects.published_post(
-            ).published_category())
-            return self.object
+        self.object = super().get_object(self.model.objects.filter(
+            Q(author__exact=self.request.user.id)
+            | Q(is_published=True,
+                pub_date__lte=datetime.datetime.now(),
+                category__is_published=True)))
         return self.object
 
     def get_context_data(self, **kwargs):
@@ -136,15 +139,17 @@ class CommentDeleteView(CheckAccessMixin, DeleteView):
     success_url = reverse_lazy('blog:index')
 
 
-class CommentCreateView(LoginRequiredMixin, ReverseToPageMixin, CreateView):
+class CommentCreateView(
+    LoginRequiredMixin, ReverseToPageMixin, CreateView
+):
     model = Comment
     form_class = CommentForm
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        commented_post = super().get_object(Post.objects.all())
+        commented_post = self.get_object(Post.objects.all())
         if commented_post.author != self.request.user:
-            commented_post = super().get_object(
+            commented_post = self.get_object(
                 Post.objects.published_post().published_category())
         form.instance.post = commented_post
         return super().form_valid(form)
